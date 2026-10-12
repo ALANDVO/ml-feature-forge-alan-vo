@@ -1,0 +1,74 @@
+{
+  "id": "feature-forge",
+  "realm": "feature-forge",
+  "displayName": "ML Feature Forge Realm",
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "roles": {
+    "realm": [
+      {
+        "name": "admin",
+        "description": "Administrator with full system privileges"
+      },
+      {
+        "name": "analyst",
+        "description": "ML engineer or data analyst with feature engineering privileges"
+      },
+      {
+        "name": "viewer",
+        "description": "Read-only access to datasets and pipelines"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "feature-forge-client",
+      "name": "ML Feature Forge Web Client",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "redirectUris": [
+        "http://127.0.0.1:3000/*",
+        "http://localhost:3000/*"
+      ],
+      "webOrigins": [
+        "http://127.0.0.1:3000",
+        "http://localhost:3000"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      }
+    }
+  ],
+  "identityProviders": [
+    {
+      "alias": "enterprise-saml-idp",
+      "displayName": "Corporate SAML Identity Provider",
+      "providerId": "saml",
+      "enabled": false,
+      "updateProfileFirstLoginMode": "on",
+      "trustEmail": true,
+      "storeToken": false,
+      "addReadTokenRoleOnCreate": false,
+      "authenticateByDefault": false,
+      "linkOnly": false,
+      "firstBrokerLoginFlowAlias": "first broker login",
+      "config": {
+        "nameIDPolicyFormat": "urn:oasis:names:tc:SAML:2.0:nameid-format:persistent",
+        "singleSignOnServiceUrl": "https://idp.corporate.example.com/saml/sso",
+        "singleLogoutServiceUrl": "https://idp.corporate.example.com/saml/slo",
+        "backchannelSupported": "false",
+        "wantAuthnRequestsSigned": "true",
+        "wantAssertionsSigned": "true",
+        "signatureAlgorithm": "RSA_SHA256"
+      }
+    }
+  ]
+}
