@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "name": "ml-feature-forge-alan-vo",
+  "owner": "ALANDVO",
+  "email": "alanvo@gmail.com",
+  "domain": "AI/ML developer tools",
+  "summary": "Work in progress: ml-feature-forge-alan-vo",
+  "workflows": [
+    "Upload tabular dataset, profile column types, and detect target column statistics",
+    "Generate candidate features via deterministic statistical transforms and opt-in LLM hypotheses",
+    "Evaluate feature importance, detect multicollinearity and data leakage, and export clean training pipelines"
+  ],
+  "auth": "oidc-keycloak-saml-broker",
+  "llm_providers": [
+    "openai-compatible",
+    "anthropic",
+    "gemini",
+    "ollama"
+  ],
+  "status": "work-in-progress"
+}

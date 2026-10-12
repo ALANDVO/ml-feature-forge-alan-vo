@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "current_feature": "core-feature-forge-engine",
+  "features": [
+    {
+      "id": "core-feature-forge-engine",
+      "title": "Full-Stack Feature Engineering Baseline with Statistical Evaluation and OIDC Auth",
+      "status": "done",
+      "acceptance": [
+        "FastAPI backend and React Vite frontend baseline",
+        "Deterministic statistical feature generation and profiling",
+        "Feature quality evaluation with leakage and multicollinearity pruning",
+        "Production Python pipeline export",
+        "Keycloak OIDC PKCE authentication and localhost demo mode"
+      ],
+      "implementation": [
+        "backend/app/main.py",
+        "backend/app/services/feature_engine.py",
+        "backend/app/services/importance.py",
+        "backend/app/services/pipeline_generator.py",
+        "backend/app/services/llm_service.py",
+        "backend/app/services/storage_service.py",
+        "backend/app/core/security.py",
+        "frontend/src/App.tsx"
+      ],
+      "tests": [
+        "backend/tests/test_feature_engine.py",
+        "backend/tests/test_api_workflows.py",
+        "backend/tests/test_auth.py",
+        "backend/tests/test_llm_service.py",
+        "frontend/src/App.test.tsx"
+      ]
+    },
+    {
+      "id": "streaming-data-ingestion",
+      "title": "Streaming Tabular Data Ingestion with Apache Arrow / Parquet",
+      "status": "planned",
+      "acceptance": [
+        "Support streaming large parquet files without loading entire dataset into memory",
+        "Chunked profiling and running statistical variance updates"
+      ],
+      "implementation": [],
+      "tests": []
+    },
+    {
+      "id": "automated-hyperparameter-tuning",
+      "title": "Automated Downstream Model Cross-Validation and Feature Ablation",
+      "status": "planned",
+      "acceptance": [
+        "Train baseline LightGBM / XGBoost models on engineered features",
+        "Measure SHAP values and cross-validated ROC-AUC / RMSE gain"
+      ],
+      "implementation": [],
+      "tests": []
+    }
+  ]
+}
