@@ -4,7 +4,7 @@ Each round completes one feature or repair. Future items are planned, not implem
 
 ## Current round
 
-core-feature-forge-engine
+target-encode-pipeline-repair
 
 ## Roadmap
 
@@ -21,7 +21,19 @@ Acceptance:
 
 Implementation: `backend/app/main.py`, `backend/app/services/feature_engine.py`, `backend/app/services/importance.py`, `backend/app/services/pipeline_generator.py`, `backend/app/services/llm_service.py`, `backend/app/services/storage_service.py`, `backend/app/core/security.py`, `frontend/src/App.tsx`
 
-Tests: `backend/tests/test_feature_engine.py`, `backend/tests/test_api_workflows.py`, `backend/tests/test_auth.py`, `backend/tests/test_llm_service.py`, `frontend/src/App.test.tsx`
+Tests: `backend/tests/test_feature_engine.py`, `backend/tests/test_api_workflows.py`, `backend/tests/test_auth.py`, `backend/tests/test_llm_service.py`, `backend/tests/test_pipeline_generation.py`, `frontend/src/App.test.tsx`
+
+### target-encode-pipeline-repair — Fix non-executable target-encoded pipeline code generation
+
+Status: done
+
+Acceptance:
+- Compiled pipeline code for target_encode features runs without NameError
+- Generated target-encoded values match the offline compute_feature_values engine
+
+Implementation: `backend/app/services/feature_engine.py`, `backend/tests/test_pipeline_generation.py`
+
+Tests: `backend/tests/test_pipeline_generation.py::test_target_encode_pipeline_expression_is_self_contained`, `backend/tests/test_pipeline_generation.py::test_all_transform_types_produce_compilable_pipeline`
 
 ### streaming-data-ingestion — Streaming Tabular Data Ingestion with Apache Arrow / Parquet
 
