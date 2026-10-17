@@ -219,7 +219,7 @@ def generate_deterministic_candidates(
             candidates.append({
                 "name": f"target_mean_{cat}",
                 "transform_type": "target_encode",
-                "expression": f"df['{cat}'].map(category_mean_map['{cat}'])",
+                "expression": f"df.groupby('{cat}')['{target_column}'].transform(lambda s: (s.sum() + 5.0 * df['{target_column}'].mean()) / (len(s) + 5.0))",
                 "input_columns": [cat],
                 "hypothesis": f"Bayesian smoothed mean expected target probability per category level in {cat}.",
                 "expected_signal": "strong",

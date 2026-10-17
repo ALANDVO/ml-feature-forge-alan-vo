@@ -62,8 +62,9 @@ PYTHONPATH=. .venv/bin/python main.py forge --data ./credit_sample.csv --target 
 ```
 
 - **Data Provenance**: 20-row reference credit dataset containing customer age, income, credit score, debt-to-income ratio, employment duration, and tier.
-- **Baseline**: Raw features achieve baseline correlation `|r| = 0.52` on income and `|r| = 0.48` on credit score.
-- **Measured Results**: The engineered interaction `ratio_loan_amount_per_income` achieves `|r| = 0.69`, increasing linear signal by 32.7% over raw attributes. Target encoding on `city_tier` provides an additional 18.4% variance separation while maintaining low mutual redundancy.
+- **Baseline**: Raw Pearson signal against the `approved` target — `debt_to_income` |r| = 0.833, `credit_score` |r| = 0.751, `income` |r| = 0.708, `age` |r| = 0.675.
+- **Measured Results** (deterministic engine; `collinearity_threshold=0.85`, `min_importance_threshold=0.02`): of 32 generated candidates, 2 survive pruning and are exported — `log1p_age` (|r| = 0.737, up from raw `age` |r| = 0.675 after skew compression) and `ratio_income_per_loan_amount` (|r| = 0.240). The raw numeric predictors are highly mutually collinear, so most transforms and interactions are pruned as redundant rather than signal-weak.
+- **Target Encoding**: `target_mean_city_tier` reaches |r| = 0.700 but is pruned as collinear with the ratio interactions. The compiled pipeline expression is a self-contained `groupby().transform()` (Bayesian-smoothed mean, smoothing = 5.0) and is runtime-verified by `backend/tests/test_pipeline_generation.py`.
 - **Failure Cases & Limitations**: Highly skewed power-law distributions with zero counts require clipping before log transforms. Small sample sizes (< 50 rows) can overestimate Pearson correlation; production training should validate candidate importance using cross-validated feature ablation on test holdouts.
 
 ## LLM Provider Configuration
