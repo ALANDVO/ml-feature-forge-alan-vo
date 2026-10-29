@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 
 class Settings(BaseModel):
     app_name: str = "ML Feature Forge"
-    app_version: str = "1.1.0"
+    app_version: str = "1.3.0"
     environment: str = Field(default_factory=lambda: os.getenv("APP_ENV", "development").lower())
     app_host: str = Field(default_factory=lambda: os.getenv("APP_HOST", "127.0.0.1"))
     app_port: int = Field(default_factory=lambda: int(os.getenv("APP_PORT", "8000")))

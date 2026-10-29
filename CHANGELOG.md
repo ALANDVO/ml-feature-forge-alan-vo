@@ -1,12 +1,21 @@
 # Changelog
 
-## 1.2.0 — work-in-progress checkpoint
+## 1.3.0 — work-in-progress checkpoint
 
 Partial code published for continued development. Known issues: STATUS.md.
 
-All notable changes to **ML Feature Forge** are documented here.
+## 1.3.0 — work-in-progress checkpoint
 
-## [1.1.0] - 2026-10-12
+Partial code published for continued development. Known issues: STATUS.md.
+
+### Added
+- Streaming Parquet ingestion service (`backend/app/services/streaming_ingestion.py`) with Apache Arrow for large dataset processing without full memory loading.
+- Chunked profiling with Welford's online algorithm for numerically stable running variance computation.
+- Reservoir sampling for incremental correlation computation with target column.
+- API endpoints for Parquet schema inspection (`POST /api/datasets/parquet/schema`), streaming profile (`POST /api/datasets/parquet/profile`), and dataset ingestion (`POST /api/datasets/parquet/ingest`).
+- ColumnProfile class supporting both numeric and categorical data types with null handling.
+
+## [1.2.0] - 2026-10-12
 
 ### Added
 - Complete modular FastAPI backend architecture with `backend/app/main.py`, `backend/app/api/`, `backend/app/services/`, `backend/app/models/`, and `backend/app/core/`.
@@ -28,3 +37,4 @@ All notable changes to **ML Feature Forge** are documented here.
 
 ### Added
 - Initial proof-of-concept CLI interface for candidate feature exploration.
+
