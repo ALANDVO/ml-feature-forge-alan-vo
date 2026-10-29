@@ -4,7 +4,7 @@ Each round completes one feature or repair. Future items are planned, not implem
 
 ## Current round
 
-target-encode-pipeline-repair
+streaming-data-ingestion
 
 ## Roadmap
 
@@ -37,11 +37,15 @@ Tests: `backend/tests/test_pipeline_generation.py::test_target_encode_pipeline_e
 
 ### streaming-data-ingestion — Streaming Tabular Data Ingestion with Apache Arrow / Parquet
 
-Status: planned
+Status: in_progress
 
 Acceptance:
 - Support streaming large parquet files without loading entire dataset into memory
 - Chunked profiling and running statistical variance updates
+
+Implementation: `backend/app/services/streaming_ingestion.py`, `backend/app/api/datasets.py`
+
+Tests: `backend/tests/test_streaming_ingestion.py`
 
 ### automated-hyperparameter-tuning — Automated Downstream Model Cross-Validation and Feature Ablation
 

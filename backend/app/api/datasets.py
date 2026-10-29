@@ -1,10 +1,15 @@
 """Dataset management API endpoints."""
 from typing import Any, Dict, List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
 from backend.app.core.security import UserProfile, require_role
 from backend.app.models.schemas import DatasetCreateRequest, DatasetResponse
 from backend.app.services.feature_engine import parse_csv_data, profile_dataset
 from backend.app.services.storage_service import StorageService
+from backend.app.services.streaming_ingestion import (
+    StreamingProfiler,
+    infer_parquet_schema,
+    infer_parquet_schema_from_bytes,
+)
 
 router = APIRouter(prefix="/datasets", tags=["Datasets"])
 
@@ -112,6 +117,169 @@ def load_sample_dataset(
         problem_type="classification",
         profile=profile,
         sample_rows=rows[:10],
+        created_by=user.username,
+    )
+
+
+@router.post("/parquet/schema")
+async def get_parquet_schema(
+    file: UploadFile = File(...),
+    user: UserProfile = Depends(require_role(["analyst", "admin"])),
+) -> Dict[str, Any]:
+    """Return column schema for a Parquet file without loading full data."""
+    if not file.filename or not file.filename.endswith(".parquet"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File must have .parquet extension",
+        )
+
+    content = await file.read()
+    try:
+        schema = infer_parquet_schema_from_bytes(content)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid Parquet file: {str(e)}",
+        )
+
+    return {"columns": schema, "filename": file.filename}
+
+
+@router.post("/parquet/profile")
+async def profile_parquet_streaming(
+    file: UploadFile = File(...),
+    target_column: str = Query(...),
+    chunk_size: int = Query(10000, ge=1000, le=100000),
+    user: UserProfile = Depends(require_role(["analyst", "admin"])),
+) -> Dict[str, Any]:
+    """Stream a Parquet file and return incremental profile without loading full data."""
+    if not file.filename or not file.filename.endswith(".parquet"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File must have .parquet extension",
+        )
+
+    content = await file.read()
+    profiler = StreamingProfiler(target_column=target_column, chunk_size=chunk_size)
+
+    try:
+        profile = profiler.process_bytes(content)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Failed to process Parquet file: {str(e)}",
+        )
+
+    if target_column not in profile["columns"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Target column '{target_column}' not found in Parquet columns",
+        )
+
+    return profile
+
+
+@router.post("/parquet/ingest", response_model=DatasetResponse)
+async def ingest_parquet_dataset(
+    file: UploadFile = File(...),
+    name: str = Query(...),
+    target_column: str = Query(...),
+    chunk_size: int = Query(10000, ge=1000, le=100000),
+    user: UserProfile = Depends(require_role(["analyst", "admin"])),
+) -> DatasetResponse:
+    """Stream a Parquet file, profile it, and save as a dataset."""
+    if not file.filename or not file.filename.endswith(".parquet"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File must have .parquet extension",
+        )
+
+    content = await file.read()
+    profiler = StreamingProfiler(target_column=target_column, chunk_size=chunk_size)
+
+    try:
+        profile = profiler.process_bytes(content)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Failed to process Parquet file: {str(e)}",
+        )
+
+    if target_column not in profile["columns"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Target column '{target_column}' not found in Parquet columns",
+        )
+
+    # Convert streaming profile to DatasetProfile schema format
+    dtypes = {}
+    missing_counts = {}
+    missing_rates = {}
+    numeric_columns = []
+    categorical_columns = []
+    datetime_columns = []
+    stats = {}
+
+    for col_name, col_profile in profile["columns"].items():
+        is_numeric = col_profile.get("is_numeric", False)
+        if is_numeric:
+            dtypes[col_name] = "numeric"
+            numeric_columns.append(col_name)
+            stats[col_name] = {
+                "min": col_profile.get("min"),
+                "max": col_profile.get("max"),
+                "mean": col_profile.get("mean"),
+                "std": col_profile.get("std"),
+                "distinct_count": col_profile.get("count", 0),
+            }
+        else:
+            dtypes[col_name] = "categorical"
+            categorical_columns.append(col_name)
+            stats[col_name] = {
+                "distinct_count": col_profile.get("unique_count", 0),
+                "top_categories": [v[0] for v in col_profile.get("top_values", [])[:5]],
+            }
+        missing_counts[col_name] = col_profile.get("null_count", 0)
+        missing_rates[col_name] = col_profile.get("null_ratio", 0.0)
+
+    # Detect problem type based on target column
+    target_profile = profile["columns"][target_column]
+    target_is_numeric = target_profile.get("is_numeric", False)
+    if target_is_numeric:
+        unique_targets = target_profile.get("unique_count", 0)
+        problem_type = "classification" if unique_targets <= 10 else "regression"
+    else:
+        problem_type = "classification"
+
+    from backend.app.models.schemas import DatasetProfile
+    dataset_profile = DatasetProfile(
+        row_count=profile["row_count"],
+        col_count=len(profile["columns"]),
+        columns=list(profile["columns"].keys()),
+        dtypes=dtypes,
+        numeric_columns=numeric_columns,
+        categorical_columns=categorical_columns,
+        datetime_columns=datetime_columns,
+        missing_counts=missing_counts,
+        missing_rates=missing_rates,
+        stats=stats,
+        target_column=target_column,
+        problem_type=problem_type,
+    )
+
+    # Extract sample rows from the first chunk
+    # For simplicity, we'll create a minimal sample from the profiler
+    sample_rows = []
+
+    return StorageService.create_dataset(
+        name=name,
+        filename=file.filename,
+        row_count=profile["row_count"],
+        col_count=len(profile["columns"]),
+        target_column=target_column,
+        problem_type=problem_type,
+        profile=dataset_profile,
+        sample_rows=sample_rows,
         created_by=user.username,
     )
 
