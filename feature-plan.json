@@ -52,7 +52,7 @@
         {
             "id": "streaming-data-ingestion",
             "title": "Streaming Tabular Data Ingestion with Apache Arrow / Parquet",
-            "status": "in_progress",
+            "status": "done",
             "acceptance": [
                 "Support streaming large parquet files without loading entire dataset into memory",
                 "Chunked profiling and running statistical variance updates"
@@ -78,3 +78,4 @@
         }
     ]
 }
+
