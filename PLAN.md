@@ -37,7 +37,7 @@ Tests: `backend/tests/test_pipeline_generation.py::test_target_encode_pipeline_e
 
 ### streaming-data-ingestion — Streaming Tabular Data Ingestion with Apache Arrow / Parquet
 
-Status: in_progress
+Status: done
 
 Acceptance:
 - Support streaming large parquet files without loading entire dataset into memory

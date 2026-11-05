@@ -9,6 +9,7 @@ from typing import Any, Dict, Iterator, List, Optional, Tuple
 
 import pyarrow as pa
 import pyarrow.parquet as pq
+import pyarrow.csv as pv
 
 from backend.app.services.importance import (
     mean,
@@ -268,9 +269,9 @@ def parquet_to_csv_chunks(
         if columns:
             table = table.select(columns)
 
-        # Write to CSV string
-        output = io.StringIO()
-        table.to_csv(output, include_header=first)
-        yield output.getvalue()
+        # Write to CSV string using pyarrow.csv
+        output = io.BytesIO()
+        pv.write_csv(table, output, write_options=pv.WriteOptions(include_header=first))
+        yield output.getvalue().decode("utf-8")
         first = False
 
