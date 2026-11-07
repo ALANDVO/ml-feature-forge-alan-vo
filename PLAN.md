@@ -55,3 +55,6 @@ Acceptance:
 - Train baseline LightGBM / XGBoost models on engineered features
 - Measure SHAP values and cross-validated ROC-AUC / RMSE gain
 
+---
+
+Alan Vo · [alanvo.net](https://alanvo.net)

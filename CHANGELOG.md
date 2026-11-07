@@ -42,3 +42,6 @@ Partial code published for continued development. Known issues: STATUS.md.
 ### Added
 - Initial proof-of-concept CLI interface for candidate feature exploration.
 
+---
+
+Alan Vo · [alanvo.net](https://alanvo.net)

@@ -117,3 +117,7 @@ docker compose up -d
 
 Maintainer: **Alan Vo** &lt;[alanvo@gmail.com](mailto:alanvo@gmail.com)&gt;  
 License: [MIT License](LICENSE)
+
+---
+
+Alan Vo · [alanvo.net](https://alanvo.net)
