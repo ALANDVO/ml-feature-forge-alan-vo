@@ -187,23 +187,56 @@ async def ingest_parquet_dataset(
     chunk_size: int = Query(10000, ge=1000, le=100000),
     user: UserProfile = Depends(require_role(["analyst", "admin"])),
 ) -> DatasetResponse:
-    """Stream a Parquet file, profile it, and save as a dataset."""
+    """Stream a Parquet file, profile it, and save as a dataset.
+    
+    Uses temporary file storage to avoid loading entire file into memory.
+    """
     if not file.filename or not file.filename.endswith(".parquet"):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="File must have .parquet extension",
         )
 
-    content = await file.read()
-    profiler = StreamingProfiler(target_column=target_column, chunk_size=chunk_size)
-
+    import tempfile
+    import os
+    
+    # Stream upload to temporary file to avoid memory pressure
+    with tempfile.NamedTemporaryFile(suffix=".parquet", delete=False) as tmp:
+        tmp_path = tmp.name
+        try:
+            # Read and write in chunks to avoid loading entire file
+            while True:
+                chunk = await file.read(8192)
+                if not chunk:
+                    break
+                tmp.write(chunk)
+        except Exception as e:
+            try:
+                os.unlink(tmp_path)
+            except OSError:
+                pass
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Failed to save uploaded file: {str(e)}",
+            )
+    
     try:
-        profile = profiler.process_bytes(content)
+        profiler = StreamingProfiler(target_column=target_column, chunk_size=chunk_size)
+        profile = profiler.process_file(tmp_path)
     except Exception as e:
+        try:
+            os.unlink(tmp_path)
+        except OSError:
+            pass
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Failed to process Parquet file: {str(e)}",
         )
+    finally:
+        try:
+            os.unlink(tmp_path)
+        except OSError:
+            pass
 
     if target_column not in profile["columns"]:
         raise HTTPException(
