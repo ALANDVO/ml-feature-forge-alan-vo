@@ -266,8 +266,6 @@ def parquet_to_csv_chunks(
 
     for batch in pf.iter_batches(batch_size=chunk_size, columns=columns):
         table = pa.Table.from_batches([batch])
-        if columns:
-            table = table.select(columns)
 
         # Write to CSV string using pyarrow.csv
         output = io.BytesIO()
