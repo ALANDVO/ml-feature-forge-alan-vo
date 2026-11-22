@@ -4,7 +4,7 @@ Each round completes one feature or repair. Future items are planned, not implem
 
 ## Current round
 
-streaming-data-ingestion
+automated-hyperparameter-tuning
 
 ## Roadmap
 
@@ -49,11 +49,15 @@ Tests: `backend/tests/test_streaming_ingestion.py`
 
 ### automated-hyperparameter-tuning — Automated Downstream Model Cross-Validation and Feature Ablation
 
-Status: planned
+Status: in_progress
 
 Acceptance:
 - Train baseline LightGBM / XGBoost models on engineered features
 - Measure SHAP values and cross-validated ROC-AUC / RMSE gain
+
+Implementation: `backend/app/services/hyperparameter_tuning.py`
+
+Tests: `backend/tests/test_hyperparameter_tuning.py`
 
 ---
 
