@@ -1,6 +1,6 @@
 {
     "schema_version": 1,
-    "current_feature": "streaming-data-ingestion",
+    "current_feature": "automated-hyperparameter-tuning",
     "features": [
         {
             "id": "core-feature-forge-engine",
@@ -68,14 +68,17 @@
         {
             "id": "automated-hyperparameter-tuning",
             "title": "Automated Downstream Model Cross-Validation and Feature Ablation",
-            "status": "planned",
+            "status": "in_progress",
             "acceptance": [
                 "Train baseline LightGBM / XGBoost models on engineered features",
                 "Measure SHAP values and cross-validated ROC-AUC / RMSE gain"
             ],
-            "implementation": [],
-            "tests": []
+            "implementation": [
+                "backend/app/services/hyperparameter_tuning.py"
+            ],
+            "tests": [
+                "backend/tests/test_hyperparameter_tuning.py"
+            ]
         }
     ]
 }
-
