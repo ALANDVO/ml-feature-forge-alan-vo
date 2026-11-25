@@ -50,7 +50,7 @@ def _safe_rmse(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     try:
         mse = np.mean((y_true - y_pred) ** 2)
         val = float(mse)
-        return math.sqrt(val) if math.isfinite(val) and val >= 0 else float("nan")
+        return math.sqrt(val) if math.isfinite(val) else float("nan")
     except Exception:
         return float("nan")
 
